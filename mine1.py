@@ -1,28 +1,45 @@
+__author__ = 'spowell'
+import ec_psql_util
+import logging
 from flask import Flask
+from flask import request
 from flask_jsonpify import jsonpify as jsonify
-from flask_responses import json_response
+
+
+
+logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s",
+                    filename="flask_autocomplete.log",
+                    filemode="w",
+                    level=logging.DEBUG,
+                    datefmt="%m/%d/%Y %I:%M:%S %p")
 
 app = Flask(__name__)
-alist = list()
 
+list_streets = ec_psql_util.sql_get_full_address()
 
-def sql_get_full_address():
-    alist.append({"full_name": "107 E CALHOUN ST"})
-    alist.append({"full_name": "428 MADRONA RANCH RD"})
+def find_autocomplete(_add_req, _list_streets):
+
+    print(_add_req)
+
+    list_candidates = list()
+    for value in list_streets:
+        if _add_req not in value["full_name"]:
+            continue
+        list_candidates.append(value)
+
+    if 0 == list_candidates.__len__():
+        print("none")
+        return None
+    else:
+        return list_candidates
 
 
 @app.route("/address", methods=["GET"])
 def get_address():
-    if alist.__len__() == 0:
-        sql_get_full_address()
 
-    #
-    # full_dict = dict()
-    # full_dict["street_adresses"] = alist
-    # # return(jsonify(full_dict))
+    resp_candidates = find_autocomplete((request.args.get("add_req")).upper(), list_streets)
 
-    return jsonify(alist)
-
+    return jsonify(resp_candidates)
 
 
 if __name__ == '__main__':
