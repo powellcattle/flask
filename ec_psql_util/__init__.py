@@ -4,7 +4,7 @@ import socket
 
 import psycopg2
 
-SQL_QUERY_STREETS = "SELECT st_full_name FROM address.view_unique_street_names ORDER BY st_full_name"
+SQL_QUERY_STREETS = "SELECT st_full_name FROM address.unique_street_names ORDER BY st_full_name"
 SQL_QUERY_ADDRESSES = "SELECT add_address FROM address.view_unique_addresses ORDER by add_address"
 
 
