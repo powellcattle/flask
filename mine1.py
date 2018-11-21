@@ -46,6 +46,7 @@ def get_streets():
 @app.route("/addresses", methods=["GET"])
 def get_addresses():
     global list_addresses
+
     list_candidates = list()
 
     req = request.args.get("req").upper()
@@ -53,8 +54,8 @@ def get_addresses():
     for value in list_addresses:
         if req in value["address"]:
             list_candidates.append(value)
-            if list_candidates.__len__() >= 10:
-                break
+            # if list_candidates.__len__() >= 10:
+            #     break
 
     return jsonify(list_candidates)
 

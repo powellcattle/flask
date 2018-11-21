@@ -1,3 +1,5 @@
+import pyodbc
+
 __author__ = 'Scot Powell'
 import logging
 import socket
@@ -5,49 +7,26 @@ import socket
 import psycopg2
 
 SQL_QUERY_STREETS = "SELECT st_full_name FROM address.unique_street_names ORDER BY st_full_name"
-SQL_QUERY_ADDRESSES = "SELECT add_address FROM address.view_unique_addresses ORDER by add_address"
+SQL_QUERY_ADDRESSES = "SELECT add_address FROM address.unique_addresses ORDER BY add_address"
 
-
-def psql_connection(_database=r"ec", _user=r"sde", _password=r"sde", _host=r"localhost", _port=r"5432", _read_only=False):
-    database = _database
-    user = _user
-    password = _password
-    host = _host
-    port = _port
-    db = None
-    if socket.gethostname() == "gis-development":
-        database = r"ec"
-    if socket.gethostname() == "gis":
-        port = r"5432"
-        host = r"localhost"
-        database = r"ec"
-        user = r"sde"
-        password = r"sde"
-    if socket.gethostname() == "home-gis":
-        port = r"5432"
-        host = r"localhost"
-        database = r"ec"
-        user = r"sde"
-        password = r"sde"
-
+def sql_server_connect(driver, server, database, trusted_connection, uid):
     try:
-        db = psycopg2.connect(database=database,
-                              user=user,
-                              password=password,
-                              host=host,
-                              port=port)
-        db.set_session(readonly=_read_only, autocommit=False)
+        return pyodbc.connect(Driver=driver, Server=server, Database=database, Trusted_Connection=trusted_connection, uid=uid)
 
-    except psycopg2.Error as e:
-        logging.error(e)
-        return None
-
-    return db
-
+    # "Driver={SQL Server Native Client 11.0};"
+    #                         "Server=HOME-GIS\SQLEXPRESS;"
+    #                         "Database=ec;"
+    #                         "Trusted_Connection=yes;"
+    #                         "uid=HOME-GIS\\sde;pwd=sde")
+    except Exception as e:
+        logging.error("{} {}".format(inspect.stack()[0][3], e))
 
 def sql_get_streets():
-    print("sql_get_streets")
-    con = psql_connection("ec", "sde", "sde", "localhost", "5432")
+    con = sql_server_connect(driver=r"{SQL Server Native Client 11.0};",
+                                     server="HOME-GIS\SQLEXPRESS;",
+                                     database="ec;",
+                                     trusted_connection="yes;",
+                                     uid="HOME-GIS\\sde;pwd=sde;")
     list_streets = list()
 
     try:
@@ -74,8 +53,11 @@ def sql_get_streets():
 
 
 def sql_get_addresses():
-    print("sql_get_addresses")
-    con = psql_connection("ec", "sde", "sde", "localhost", "5432")
+    con = sql_server_connect(driver=r"{SQL Server Native Client 11.0};",
+                                     server="HOME-GIS\SQLEXPRESS;",
+                                     database="ec;",
+                                     trusted_connection="yes;",
+                                     uid="HOME-GIS\\sde;pwd=sde;")
     list_addresses = list()
 
     try:
